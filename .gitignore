@@ -185,3 +185,16 @@ cpac-venv/share/jupyter/kernels/python3/kernel.json
 cpac-venv/share/jupyter/kernels/python3/logo-32x32.png
 cpac-venv/share/jupyter/kernels/python3/logo-64x64.png
 cpac-venv/share/man/man1/ipython.1.gz
+binary/CHANGELOG.txt
+binary/CITATION.txt
+binary/COPYING.txt
+binary/ffmpeg.exe
+binary/ffplay.exe
+binary/ffprobe.exe
+binary/libsndfile-1.dll
+binary/README.txt
+binary/sonic-annotator.exe
+binary/test.n3
+cpac-venv/Scripts/pylupdate5.exe
+cpac-venv/Scripts/pyrcc5.exe
+cpac-venv/Scripts/pyuic5.exe
