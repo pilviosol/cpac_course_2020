@@ -1,0 +1,17 @@
+{
+    "songs":[
+        {"id":"", "artist":"scorpion", "title":"winds of change"},        
+        {"id":"", "artist":"", "title":"we don't have to take our clothes off"},
+        {"id":"", "artist":"florence and the machine", "title":"dog days are over"},
+        {"id":"", "artist":"george michael", "title":"faith"},
+        {"id":"", "artist":"offspring", "title":"why don't you get a job"},
+        {"id":"", "artist":"lin manuel miranda", "title":"my shot"},
+        {"id":"", "artist":"lele marlin", "title":"unforgiveable sinner"},
+        {"id":"", "artist":"foo fighters", "title":"learn to fly"},
+        {"id":"", "artist":"beyonce", "title":"single ladies"},
+        {"id":"", "artist":"black eyed peas", "title":"where is the love"},
+        {"id":"", "artist":"alanis morissette", "title":"ironic"}
+
+    ]
+
+}
