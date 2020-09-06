@@ -202,7 +202,12 @@ class AgentDrawer{
     this.maxFeatures = new float[numFeatures];
     this.minFeatures = new float[numFeatures];
     for(int i=0; i<this.numFeatures; i++){
-      this.maxFeatures[i]=0;
+      /*
+      Since we don't know the value of the features in advance, 
+      we will keep estimating the minimum and maximum values for 
+      each of them
+      */
+      this.maxFeatures[i]=0; 
       this.minFeatures[i]=0;
     }
   }
@@ -222,6 +227,10 @@ class AgentDrawer{
         fill(this.colors[i]);
         text(this.labels[i], MARGIN, aboveSpace+this.heightFeatures);
         if(this.first_frame){
+          /*
+          If this is the first frame, we don't estimate min and max but
+          just copy the value (we cannot compare them)
+          */
           this.maxFeatures[i]=values[i];
           this.minFeatures[i]=values[i];
         }
@@ -232,8 +241,19 @@ class AgentDrawer{
               this.minFeatures[i]=values[i];}
         }
         if(this.wait_frames<=0){            
+          /*
+          We wait for some frames before actually starting drawing, so
+          we have a better estimate of the range.
+          We start initializing wait_frames at 10, then each frame we 
+          decrease this number until we have 0, then we start drawing.
+          The map function is:
+          value_out=map(value_in, range_in_min, range_in_max, range_out_min, range_out_max)
+          and it maps a value in an input range to a value in an output range.
+          E.g., map(0.3, 0, 1, 0, 100)=>30
+          */
             x=map(values[i], this.minFeatures[i], this.maxFeatures[i], 0, this.maxWidth);
         }     
+        /* this actually draws the value */
         rect(this.marginLeft, aboveSpace,  x, this.heightFeatures); 
         
     }
