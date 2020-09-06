@@ -198,3 +198,6 @@ binary/test.n3
 cpac-venv/Scripts/pylupdate5.exe
 cpac-venv/Scripts/pyrcc5.exe
 cpac-venv/Scripts/pyuic5.exe
+data/wdym_claps.wav
+data/wdym.mp3
+data/wdym.wav
