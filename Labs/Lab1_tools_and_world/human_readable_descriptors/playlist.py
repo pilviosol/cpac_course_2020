@@ -9,7 +9,7 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import your_code
 CREATE_SPOTIFY_PLAYLIST = True # Set it to "no" and I will create a long file instead
 # %% Get the token
-# 1) go to https://developer.spotify.com/console/get-audio-analysis-track/?id=06AKEBrKUckW0KREUWRnvT
+# 1) go to https://developer.spotify.com/console/post-playlists/
 # 2) press "try it"
 # 3) remember to include playlist-modify-private 
 # 4) login
@@ -59,13 +59,23 @@ shuffled_songs=your_code.sort_songs(audio_features)
 name_playlist=input("What's the name of the playlist you want to create?")
 user_id=input("What's your username?")
 
-params={"user_id": user_id, "name":name_playlist, "description": "made during cpac!"}
+params={"name":name_playlist, "description": "made during cpac!"}
 
 
-# %%
+# %% Actually create the playlist
 create_playlist_url="https://api.spotify.com/v1/users/{user_id}/playlists".format(user_id=user_id)
-req=requests.get(url=create_playlist_url, params=params, headers=header)
-assert req.status_code==200, req.content
-# %%
-playlists=req.json()
-# %%
+req=requests.post(url=create_playlist_url, json=params, headers=header)
+assert req.status_code==201, req.content
+playlist_info=req.json()
+print("Playlist created with url %s"%playlist_info["external_urls"]["spotify"])
+# %% Populating the playlist
+# Doc at https://developer.spotify.com/documentation/web-api/reference/playlists/add-tracks-to-playlist/
+add_item_playlist_url="https://api.spotify.com/v1/playlists/{playlist_id}/tracks".format(playlist_id=playlist_info["id"])
+uris=[]
+for song in shuffled_songs:
+    uris.append(song["uri"])
+params={"uris":uris, }
+req=requests.post(url=add_item_playlist_url, json=params, headers=header)
+assert req.status_code==201, req.content
+playlist_info_songs=req.json()
+
