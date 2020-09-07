@@ -202,3 +202,5 @@ data/wdym_claps.wav
 data/wdym.mp3
 data/wdym.wav
 Labs/Lab1_tools_and_world/human_readable_descriptors/first_result.mp3
+Labs/Lab1_tools_and_world/human_readable_descriptors/*.mp3
+Labs/Lab1_tools_and_world/human_readable_descriptors/tmpdir/*.mp3
