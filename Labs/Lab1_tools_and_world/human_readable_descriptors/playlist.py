@@ -7,7 +7,9 @@ import requests
 
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import your_code
-CREATE_SPOTIFY_PLAYLIST = True # Set it to "no" and I will create a long file instead
+CREATE_SPOTIFY_PLAYLIST = True 
+# Set it to False and I will create a long file instead
+
 # %% Get the token
 # 1) go to https://developer.spotify.com/console/post-playlists/
 # 2) press "try it"
@@ -57,25 +59,74 @@ shuffled_songs=your_code.sort_songs(audio_features)
 # Go to https://open.spotify.com/ , top right corner, press "Account"
 # look at your username or user_id
 name_playlist=input("What's the name of the playlist you want to create?")
-user_id=input("What's your username?")
+if CREATE_SPOTIFY_PLAYLIST:
+    user_id=input("What's your username?")
 
-params={"name":name_playlist, "description": "made during cpac!"}
+    params={"name":name_playlist, "description": "made during cpac!"}
 
 
 # %% Actually create the playlist
-create_playlist_url="https://api.spotify.com/v1/users/{user_id}/playlists".format(user_id=user_id)
-req=requests.post(url=create_playlist_url, json=params, headers=header)
-assert req.status_code==201, req.content
-playlist_info=req.json()
-print("Playlist created with url %s"%playlist_info["external_urls"]["spotify"])
+if CREATE_SPOTIFY_PLAYLIST:
+    create_playlist_url="https://api.spotify.com/v1/users/{user_id}/playlists".format(user_id=user_id)
+    req=requests.post(url=create_playlist_url, json=params, headers=header)
+    assert req.status_code==201, req.content
+    playlist_info=req.json()
+    print("Playlist created with url %s"%playlist_info["external_urls"]["spotify"])
 # %% Populating the playlist
 # Doc at https://developer.spotify.com/documentation/web-api/reference/playlists/add-tracks-to-playlist/
-add_item_playlist_url="https://api.spotify.com/v1/playlists/{playlist_id}/tracks".format(playlist_id=playlist_info["id"])
-uris=[]
-for song in shuffled_songs:
-    uris.append(song["uri"])
-params={"uris":uris, }
-req=requests.post(url=add_item_playlist_url, json=params, headers=header)
-assert req.status_code==201, req.content
-playlist_info_songs=req.json()
+if CREATE_SPOTIFY_PLAYLIST:
+    add_item_playlist_url="https://api.spotify.com/v1/playlists/{playlist_id}/tracks".format(playlist_id=playlist_info["id"])
+    uris=[]
+    for song in shuffled_songs:
+        uris.append(song["uri"])
+    params={"uris":uris, }
+    req=requests.post(url=add_item_playlist_url, json=params, headers=header)
+    assert req.status_code==201, req.content
+    playlist_info_songs=req.json()
+
+# %% Create a fake playlist as a long long file
+if not CREATE_SPOTIFY_PLAYLIST:
+    from librosa import load
+    import urllib.request
+    import numpy as np
+    import soundfile as sf
+    import subprocess
+
+    SR=16000
+    if not os.path.exists("tmpdir"):
+        os.makedirs("tmpdir")
+    songs_data=[] # Here I will place the data of the loaded songs
+    for s, song in enumerate(shuffled_songs):
+        if song["preview_url"] is None: 
+            print("Sorry, I cannot download %s"%(song["title"]))
+            continue
+        if not os.path.exists("tmpdir/%d.mp3"%s): # I download it only if not present
+            urllib.request.urlretrieve(song["preview_url"], "tmpdir/%d.mp3"%s)
+        x, sr=load("tmpdir/%d.mp3"%s, sr=SR) 
+        songs_data.append(x)
+    
+    fade_dur=int(SR/2) # half-second cross fade
+
+    # I will put all the songs in this final array whose length is
+    # 30 seconds (each preview) * samplerate * how many songs + 2 fade duration just in case
+    y=np.zeros((int(len(songs_data)*(30*SR)+2*fade_dur),)) 
+
+    k=fade_dur # I leave one fade duration of beginning
+    for x in songs_data:
+        x[:fade_dur]*=np.linspace(0,1,fade_dur) # this is the fade in
+        x[-fade_dur:]*=np.linspace(1,0,fade_dur) # this is the fade out
+        y[k:k+x.size]+=x # by summing I make the cross-fade
+        k=k+x.size-fade_dur 
+        # note I move the cursor by the duration of each song 
+        # MINUS the fade duration, so I will achieve the cross fade
+    
+    # saving the file
+    sf.write("%s.wav"%name_playlist, y, SR, format="wav")
+    
+    # converting it to mp3
+    subprocess.call("ffmpeg -i %s.wav %s.mp3"%(name_playlist,name_playlist))
+    
+    # if the convertion was successful, I can remove the wavfile
+    if os.path.exists("%s.mp3"%name_playlist):
+        os.remove("%s.wav"%name_playlist)
 
