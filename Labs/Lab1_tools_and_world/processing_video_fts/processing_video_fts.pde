@@ -1,4 +1,4 @@
-import gab.opencv.*; //<>// //<>// //<>//
+import gab.opencv.*; 
 import processing.video.*;
 
 Capture cam;
@@ -10,8 +10,12 @@ boolean is_first_frame=true;
 int NO_EFFECT=0;
 int EFFECT_SWITCH_COLORS=1;
 int EFFECT_DIFF_FRAMES=2;
+int EFFECT_OPTICAL_FLOW=3;
 
-int effect=EFFECT_DIFF_FRAMES;
+int effect=EFFECT_OPTICAL_FLOW;
+
+OpenCV opencv=null;
+
 
 void setup() {
   size(640, 480);
@@ -26,7 +30,7 @@ void setup() {
     for (int i = 0; i < cameras.length; i++) {
       println(cameras[i]);
     }
-
+    
     // The camera can be initialized directly using an 
     // element from the array returned by list():
     cam = new Capture(this, cameras[3]);
@@ -88,13 +92,44 @@ void changeColors(PImage img){
   img.updatePixels();
   
 }
+int max_M=0;
+int min_M=0;
+void opticalFlow(PImage img){
+  opencv.loadImage(img);
+  opencv.calculateOpticalFlow();
+  int grid_size=10;
+  int half_grid=5;
+  int c_x=0;
+  int c_y=0;
+  PVector aveFlow;
+  image(img,0,0);
+  stroke(255,0,0);
+  strokeWeight(2);
+  
+  for (int w=0; w<img.width; w+=grid_size){
+    for (int h=0; h<img.height; h+=grid_size){
+       aveFlow = opencv.getAverageFlowInRegion(w, h, grid_size, grid_size);
+       c_x=w+half_grid;
+       c_y=h+half_grid;
+       
+       line(c_x, c_y, c_x+min(aveFlow.x*half_grid, half_grid), c_y+min(aveFlow.y*half_grid, half_grid));
+    }
+  }
+}
+
 void draw() {
   if (! cam.available()) {return;}
   cam.read();
-  
+  if(opencv ==null){
+    opencv = new OpenCV(this, cam.width, cam.height);
+  }
   PImage img=createImage(cam.width,cam.height,RGB);
   copy2img(cam, img);
-  if(effect==EFFECT_DIFF_FRAMES){
+  if(effect==EFFECT_OPTICAL_FLOW){
+     opticalFlow(img);
+     return; 
+  }
+  else if(effect==EFFECT_DIFF_FRAMES){
      effectDiffFrames(img);
   }
   else if(effect==EFFECT_SWITCH_COLORS){
