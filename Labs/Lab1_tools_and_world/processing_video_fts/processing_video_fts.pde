@@ -45,13 +45,7 @@ void copy2img(Capture camera, PImage img) {
 }
 
 void copy_img(PImage src, PImage dst) {
-  
-  dst.loadPixels();
-  src.loadPixels();
-  for (int i=0; i<src.width*src.height; i++) {
-    dst.pixels[i]=src.pixels[i];
-  }
-  dst.updatePixels();
+  dst.set(0,0,src);
 }
 
 
