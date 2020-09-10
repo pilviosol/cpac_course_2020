@@ -4,8 +4,15 @@ import processing.video.*;
 Capture cam;
 PImage old_frame;
 PImage diff_frame;
-boolean is_first_frame=true;
-int effect=0; // 0: diff of frames
+boolean is_first_frame=true; 
+
+/* EFFECTS CODE */
+int NO_EFFECT=0;
+int EFFECT_SWITCH_COLORS=1;
+int EFFECT_DIFF_FRAMES=2;
+
+int effect=EFFECT_DIFF_FRAMES;
+
 void setup() {
   size(640, 480);
 
@@ -30,53 +37,80 @@ void setup() {
 }
 
 void copy2img(Capture camera, PImage img) {
-  camera.loadPixels();
   img.loadPixels();
   for (int i=0; i<camera.width*camera.height; i++) {
     img.pixels[i]=camera.pixels[i];
   }
   img.updatePixels();
 }
+
+void copy_img(PImage src, PImage dst) {
+  
+  dst.loadPixels();
+  src.loadPixels();
+  for (int i=0; i<src.width*src.height; i++) {
+    dst.pixels[i]=src.pixels[i];
+  }
+  dst.updatePixels();
+}
+
+
 float[] getColors(color pixel) {
   float[] colors={red(pixel), blue(pixel),green(pixel)};
   return colors;
 }
 
-PImage effectDiffFrames(Capture cam){
+void effectDiffFrames(PImage img){
   if (is_first_frame) {
-    old_frame = createImage(cam.width, cam.height, RGB);
-    diff_frame = createImage(cam.width, cam.height, RGB);
-    copy2img(cam, old_frame);
+    old_frame = createImage(img.width, img.height, RGB);
+    diff_frame = createImage(img.width, img.height, RGB);
+    copy_img(img, old_frame);
     is_first_frame=false;
-    return createImage(0, 0, RGB);
+    img = createImage(0, 0, RGB);
+    return; 
   }
   diff_frame.loadPixels();
   old_frame.loadPixels();  
-  cam.loadPixels();
   for (int i=0; i<cam.width*cam.height; i++) {
     float[] old_colors=getColors(old_frame.pixels[i]); //<>//
-    float[] colors=getColors(cam.pixels[i]);
+    float[] colors=getColors(img.pixels[i]);
     diff_frame.pixels[i]=color(abs(colors[0]-old_colors[0]), 
                                 abs(colors[1]-old_colors[1]), 
                                 abs(colors[2]-old_colors[2]));
     
   }
   diff_frame.updatePixels();
-  copy2img(cam, old_frame);
-  return diff_frame;
+  copy_img(img, old_frame);
+  copy_img(diff_frame, img);
+  
 }
-
+void changeColors(PImage img){
+  img.loadPixels();
+  for (int i=0; i<img.width*img.height; i++) {
+    img.pixels[i]=color(blue(img.pixels[i]),
+                        red(img.pixels[i]),
+                        green(img.pixels[i]));
+  }
+  img.updatePixels();
+  
+}
 void draw() {
-  if (cam.available() == true) {
-    cam.read();
-  } 
+  if (! cam.available()) {return;}
+  cam.read();
+  
+  PImage img=createImage(cam.width,cam.height,RGB);
+  copy2img(cam, img);
+  if(effect==EFFECT_DIFF_FRAMES){
+     effectDiffFrames(img);
+  }
+  else if(effect==EFFECT_SWITCH_COLORS){
+    changeColors(img);
+  }
   else{
-    return;
+    /*NO EFFECT*/;
   }
-  PImage img=createImage(0,0,RGB);
-  if(effect==0){
-     img = effectDiffFrames(cam);
-  }
+  
+  
   
   if(img.width>0){
     image(img, 0, 0);
