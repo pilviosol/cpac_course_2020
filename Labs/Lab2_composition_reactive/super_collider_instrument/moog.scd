@@ -1,7 +1,7 @@
 
 (
 SynthDef("moog", {
-	arg vibr=0, cutoff=0.5, midinote=60, amp=0, sustain=1;
+	arg vibr=0, cutoff=0.5, midinote=60, amp=0;
 	var osc1, osc2, osc3, f0, vib_int, cutoff_freq, fil_osc, freq;
 
 	freq=midicps(midinote);
@@ -15,9 +15,6 @@ SynthDef("moog", {
 	cutoff_freq=((cutoff+0.5)*6)*freq;
 
 	fil_osc=BLowPass.ar(in:osc1+osc2+osc3, freq:cutoff_freq);
-	fil_osc= fil_osc*EnvGen.kr(Env.linen(0.05, sustain, 0.1), doneAction: Done.freeSelf);
-	//fil_osc= fil_osc*EnvGen.kr(Env.linen(0.05, sustain, 0.1), doneAction: 15);
-	//fil_osc= fil_osc*EnvGen.kr(Env.linen(0.05, sustain, 0.1));
 	Out.ar([0,1], amp*fil_osc);}).add;
 )
 
@@ -29,7 +26,6 @@ Pbind(
     \instrument,        \moog,
     \midinote,             Pseq(12+[31, 31, 31,31, 31, 31,31, 33, 34,34,34,34,34,34,34,38,
 		36,36,36,36,36,36,36,38,39,39,39,39,38,33,33,30], inf),
-	\sustain,             Pseq([0.33,]*60.0/bpm, inf),
 	\amp,             Pseq([1,0.7,0.7,0.7], inf),
     \dur,                Pseq([0.5]*60.0/bpm, inf),
 
@@ -40,54 +36,19 @@ Pbind(
 // Use this command to start the server
 NetAddr("127.0.0.1",57120);
 
+
+
 (
-var instr;
-instr=Synth(\moog);
+var instr=Synth(\moog);
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var note,amp, vibr, cutoff, sustain;
+		var note, amp;
+
 		msg.postln;
 		note=msg[1];
 		amp=msg[2];
-		vibr=msg[3];
-		cutoff=msg[4];
-		sustain=msg[5];
-		instr.set(\midinote,note, \cutoff,cutoff, \vibr, vibr, \amp,amp, \sustain, sustain);
-	},
-	"/all_moog");
-)
-
-
-
-(
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var note,amp, sustain, instr;
-		instr=Synth(\moog);
-
-		msg.postln;
-		note=msg[1];
-		sustain=msg[2]-0.1 ;
-		amp=msg[3];
-
-		instr.set(\midinote,note, \sustain, sustain, \amp,amp);
-	},
-	"/note_amp");
-)
-(
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var note,sustain, instr;
-		instr=Synth(\moog);
-
-		msg.postln;
-		note=msg[1];
-		sustain=msg[2];
-
-		instr.set(\midinote,note, \sustain, sustain);
+		instr.set(\midinote,note, \amp,amp);
 	},
 	"/note");
 )
@@ -95,23 +56,25 @@ OSCdef('OSCreceiver',
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var vibr, cutoff, amp, instr;
-		instr=Synth(\moog);
+		var vibr, cutoff, amp, note;
 
 		msg.postln;
-		cutoff=msg[1];
+
+		note=msg[1];
 		amp=msg[2];
-		vibr=msg[3];
-		instr.set(\cutoff,cutoff, \vibr, vibr, \amp,amp);
+		cutoff=msg[3];
+		amp=msg[4];
+		instr.set(\cutoff,cutoff, \vibr, vibr, \amp,amp, \midinote, note);
 	},
-	"/effect_amp");
+	"/note_effect");
 )
 (
+var instr:
+instr=Synth(\moog);
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var vibr, cutoff, instr;
-		instr=Synth(\moog);
+		var vibr, cutoff;
 
 		msg.postln;
 		cutoff=msg[1];
@@ -122,7 +85,31 @@ OSCdef('OSCreceiver',
 )
 
 
+(
+var instr=Synth(\moog);
+OSCdef('OSCreceiver',
+	{
+		arg msg;
+		var note,amp;
 
+		msg.postln;
+		note=msg[1];
+		amp=msg[2];
+		instr.set(\midinote,note, \amp,amp);
+	},
+	"/note");
+OSCdef('OSCreceiver',
+	{
+		arg msg;
+		var vibr, cutoff;
+
+		msg.postln;
+		cutoff=msg[1];
+		vibr=msg[2];
+		instr.set(\cutoff,cutoff, \vibr, vibr);
+	},
+	"/effect");
+)
 
 
 
