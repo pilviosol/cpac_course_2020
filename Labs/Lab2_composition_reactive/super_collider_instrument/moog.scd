@@ -33,13 +33,26 @@ Pbind(
 )
 
 
+// SETTING the instrument as a global variable
+(
+~instr=Synth(\moog);
+)
+
+
+(
+~instr.set(\midinote, 62, \amp, 1);
+)
+(
+~instr.set(\vibr, 0);
+)
+
+
 // Use this command to start the server
 NetAddr("127.0.0.1",57120);
 
 
 
 (
-var instr=Synth(\moog);
 OSCdef('OSCreceiver',
 	{
 		arg msg;
@@ -48,10 +61,27 @@ OSCdef('OSCreceiver',
 		msg.postln;
 		note=msg[1];
 		amp=msg[2];
-		instr.set(\midinote,note, \amp,amp);
+		~instr.set(\midinote,note, \amp,amp);
 	},
 	"/note");
 )
+
+(
+OSCdef('OSCreceiver',
+	{
+		arg msg;
+		var vibr, cutoff;
+
+		msg.postln;
+		cutoff=msg[1];
+		vibr=msg[2];
+		~instr.set(\cutoff,cutoff, \vibr, vibr);
+	},
+	"/effect");
+)
+
+
+
 (
 OSCdef('OSCreceiver',
 	{
@@ -68,21 +98,7 @@ OSCdef('OSCreceiver',
 	},
 	"/note_effect");
 )
-(
-var instr:
-instr=Synth(\moog);
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var vibr, cutoff;
 
-		msg.postln;
-		cutoff=msg[1];
-		vibr=msg[2];
-		instr.set(\cutoff,cutoff, \vibr, vibr);
-	},
-	"/effect");
-)
 
 
 (

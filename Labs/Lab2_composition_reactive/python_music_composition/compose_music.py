@@ -1,11 +1,15 @@
+	
 import time
 import numpy as np
 from pythonosc import udp_client
 from threading import Thread, Event
-from algorithms import simple_next, arpeggio_next, STATUS_START
 import platform
 import sys
 import ctypes, sys
+
+
+from your_code import simple_next, arpeggio_next
+from constants import STATUS_START
 
 def note_sleep(BPM, beats):
 	time.sleep(beats*60./BPM)
@@ -32,7 +36,7 @@ class Status:
 	def __str__(self):
 		return "\n\t".join(["Status: %d"%self.current, 
 								"midinote: %d"%self.midinote, 
-								"duration: %d beats"%self.dur,
+								"duration: %s beats"%str(self.dur),
 								"amplitude: %.1f"%self.amp,
 								"BPM: %d"%self.BPM,
 								"pars: %s"%str(self.pars)])
@@ -45,7 +49,7 @@ class Agent(Thread):
 		self.func=func
 		self.stop=Event()
 		self.stop.clear()
-		self.planning()
+		#self.planning()
 	
 	def planning(self):
 		self.func(self.status)
@@ -74,17 +78,20 @@ if __name__=="__main__":
 
 	n_agents=1
 	agents=[_ for _ in range(n_agents)]
-	agents[0] = Agent(57120, "/note", 60, simple_next)
-	#agents[0] = Agent(57120, "/moog", 60, arpeggio_next)
+	#agents[0] = Agent(57120, "/note", 60, simple_next)
+	agents[0] = Agent(57120, "/note", 60, arpeggio_next)
 	input("Press any key to start \n")
 	for agent in agents:
 		agent.start()
-	#agent.join()
+	# USE CTRL+C to exit 
 	try:
 		while True:
 			time.sleep(10)
-	except:
+	except: 
+		
 		for agent in agents:
+			# before killing it, I set the amplitude to 0
+			agent.instr.send(agent.status.midinote, 0)  
 			agent.kill()
 		sys.exit()
 
