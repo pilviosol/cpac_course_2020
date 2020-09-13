@@ -204,3 +204,5 @@ data/wdym.wav
 Labs/Lab1_tools_and_world/human_readable_descriptors/first_result.mp3
 Labs/Lab1_tools_and_world/human_readable_descriptors/*.mp3
 Labs/Lab1_tools_and_world/human_readable_descriptors/tmpdir/*.mp3
+Labs/Lab1_tools_and_world/processing_video_fts/application.windows64/*
+Labs/Lab1_tools_and_world/processing_video_fts/application.windows32/*
