@@ -24,31 +24,20 @@ SynthDef("moog", {
 
 // Test with a line of bass
 (
+var bpm=96;
 Pbind(
     \instrument,        \moog,
     \midinote,             Pseq(12+[31, 31, 31,31, 31, 31,31, 33, 34,34,34,34,34,34,34,38,
 		36,36,36,36,36,36,36,38,39,39,39,39,38,33,33,30], inf),
-	\sustain,             Pseq([0.1,], inf),
+	\sustain,             Pseq([0.33,]*60.0/bpm, inf),
 	\amp,             Pseq([1,0.7,0.7,0.7], inf),
-    \dur,                Pseq([0.33], inf),
-
-).play;
-)
-
-// Test with a line of bass
-(
-Pbind(
-    \instrument,        \moog,
-    \midinote,             Pseq(12+[31, 31, 33, 34,34,38, 36,36,38,39,42,38,33,30], inf),
-	\sustain,             Pseq([0.33,], inf),
-	\amp,             Pseq([0.8], inf),
-    \dur,                Pseq([2,0.33, 0.33, 2, 0.33, 0.33, 2, 0.33,0.33,1.33,0.33,0.33,0.33,0.33], inf),
+    \dur,                Pseq([0.5]*60.0/bpm, inf),
 
 ).play;
 )
 
 
-//set the server
+// Use this command to start the server
 NetAddr("127.0.0.1",57120);
 
 (
@@ -91,7 +80,9 @@ OSCdef('OSCreceiver',
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var note,sustain;
+		var note,sustain, instr;
+		instr=Synth(\moog);
+
 		msg.postln;
 		note=msg[1];
 		sustain=msg[2];
@@ -99,10 +90,14 @@ OSCdef('OSCreceiver',
 		instr.set(\midinote,note, \sustain, sustain);
 	},
 	"/note");
+)
+(
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var vibr, cutoff, amp;
+		var vibr, cutoff, amp, instr;
+		instr=Synth(\moog);
+
 		msg.postln;
 		cutoff=msg[1];
 		amp=msg[2];
@@ -110,10 +105,14 @@ OSCdef('OSCreceiver',
 		instr.set(\cutoff,cutoff, \vibr, vibr, \amp,amp);
 	},
 	"/effect_amp");
+)
+(
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var vibr, cutoff;
+		var vibr, cutoff, instr;
+		instr=Synth(\moog);
+
 		msg.postln;
 		cutoff=msg[1];
 		vibr=msg[2];
