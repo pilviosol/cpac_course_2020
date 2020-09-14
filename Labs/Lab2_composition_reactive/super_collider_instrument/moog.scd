@@ -18,32 +18,19 @@ SynthDef("moog", {
 	Out.ar([0,1], amp*fil_osc);}).add;
 )
 
-
-// Test with a line of bass
-(
-var bpm=96;
-Pbind(
-    \instrument,        \moog,
-    \midinote,             Pseq(12+[31, 31, 31,31, 31, 31,31, 33, 34,34,34,34,34,34,34,38,
-		36,36,36,36,36,36,36,38,39,39,39,39,38,33,33,30], inf),
-	\amp,             Pseq([1,0.7,0.7,0.7], inf),
-    \dur,                Pseq([0.5]*60.0/bpm, inf),
-
-).play;
-)
-
-
 // SETTING the instrument as a global variable
 (
 ~instr=Synth(\moog);
 )
 
-
+// setting the note
 (
 ~instr.set(\midinote, 62, \amp, 1);
 )
+
+//setting the cutoff
 (
-~instr.set(\vibr, 0);
+~instr.set(\cutoff, 3);
 )
 
 
