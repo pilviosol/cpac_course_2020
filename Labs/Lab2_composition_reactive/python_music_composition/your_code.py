@@ -2,6 +2,8 @@ import random
 
 from constants import STATUS_START
 
+
+
 def simple_next(status):
 	if status.current ==STATUS_START: # start
 		status.midinote=60
@@ -17,55 +19,89 @@ def simple_next(status):
 		status.midinote -=1
 		if status.midinote==60:
 			status.current = 0
+	
+def map_(x_in, range_in, range_out):
+	x_out = (x_in-range_in[0])/(range_in[1]-range_in[0])
+	x_out = range_out[0]+ x_out * (range_out[1]-range_out[0])
+	return min(max(x_out, range_out[0]), range_out[1]) 
 
-major_arpeggio=[0, +4,  +7]
-minor_arpeggio=[0, +3,  +7]
-
-def arpeggio_next(status):
+def gingerbread(status):
+	def next_gingerbread(status):
+		old_x=status.pars["x"]
+		status.pars["x"]=1-status.pars["y"]+abs(status.pars["x"])
+		status.pars["y"]=old_x
 	if status.current ==STATUS_START: # start
-		status.midinote=60
-		status.dur = 1
-		status.pars["count"]=0
-		status.pars["verse"]=1
-		status.pars["grade"]=0
-		status.pars["tonic"]=60
-		status.BPM = 240
+		notes=[60, 62, 64, 67, 69, ]
+		status.pars["notes"] = []
+		status.pars["durs"] = [1, .5, .25, .25]
+
+		for octave in range(-2,3):
+			for note in notes:
+				status.pars["notes"].append(octave*12+note)
+		status.pars["range_y"]=[-3, 8]
+		status.pars["y"]=0.1
+		status.pars["x"]=-0.1
+		i=map_(status.pars["y"], 
+		               status.pars["range_y"], 
+		               [0, len(status.pars["notes"])])
+		status.midinote=status.pars["notes"][int(i)]
+		
+		status.dur = status.pars["durs"][0]
+		status.pars["count"]=1
+		status.BPM = 120
 		status.amp = 1
 		status.current=0
-		return
-	status.pars["count"]+=1 # always increasing count	
-	if status.midinote >84:	
-		status.pars["verse"]=-1
-	if status.midinote <48:	
-		status.pars["verse"]=1
+	elif status.current==0:
+		next_gingerbread(status)
+		i=map_(status.pars["y"], 
+		               status.pars["range_y"], 
+		               [0, len(status.pars["notes"])])
+		status.midinote=status.pars["notes"][int(i)]
+		status.pars["count"]=status.pars["count"]%len(status.pars["durs"])
+		status.dur = status.pars["durs"][status.pars["count"]]
+		status.pars["count"]+=1
 	
-	status.pars["grade"]+=status.pars["verse"]
-	
-	status.amp = 1
-	status.dur=0.5
-	if status.pars["count"]%3 ==0:
-		status.dur=1 # a beat every 3
-	if status.pars["count"]%3 ==2:
-		status.amp = 0.8 # weak beat
+def gingerbread_randomness(status):
+	def next_gingerbread(status):
+		old_x=status.pars["x"]
+		status.pars["x"]=1-status.pars["y"]+abs(status.pars["x"])
+		status.pars["y"]=old_x
+	if status.current ==STATUS_START: # start
+		notes=[60, 62, 64, 67, 69, ]
+		status.pars["notes"] = []
+		status.pars["durs"] = [1, .5, .25, .25]
 
-	if status.current==0:
-		status.midinote=status.pars["tonic"]+\
-						major_arpeggio[status.pars["grade"]%len(major_arpeggio)]
-	elif status.current==1:
-		status.midinote=status.pars["tonic"]+\
-						minor_arpeggio[status.pars["grade"]%len(minor_arpeggio)]
+		for octave in range(-2,3):
+			for note in notes:
+				status.pars["notes"].append(octave*12+note)
+		status.pars["range_y"]=[-3, 8]
+		status.pars["y"]=0.1
+		status.pars["x"]=-0.1
+		i=map_(status.pars["y"], 
+		               status.pars["range_y"], 
+		               [0, len(status.pars["notes"])])
+		status.midinote=status.pars["notes"][int(i)]
 		
-	random_value=random.random()
-	if random_value<.3 and \
-		((status.midinote >84 and status.midinote<status.pars["tonic"]) or \
-		(status.midinote <48 and status.midinote>status.pars["tonic"]) or \
-		48<status.midinote<84):
-		# change tonic
-		status.pars["tonic"]=status.midinote
-		status.pars["grade"]=0
-		status.pars["count"]=0		
-		print("changing tonic!")
-	elif random_value>.7: # probability 30%
-		# change mode
-		status.current = 1-status.current
-		print("changin major-minor!")
+		status.dur = status.pars["durs"][0]
+		status.pars["count"]=1
+		status.pars["offset"]=0
+		status.BPM = 120
+		status.amp = 1
+		status.current=0
+	elif status.current==0:
+		next_gingerbread(status)
+		i=map_(status.pars["y"], 
+		               status.pars["range_y"], 
+		               [0, len(status.pars["notes"])])
+		if random.random()<0.1: #5% probability
+			status.pars["offset"]=random.random()*len(status.pars["notes"])
+						
+
+		i=(i+status.pars["offset"])%len(status.pars["notes"])
+		status.midinote=status.pars["notes"][int(i)]
+		status.pars["count"]=status.pars["count"]%len(status.pars["durs"])
+		status.dur = status.pars["durs"][status.pars["count"]]
+		status.pars["count"]+=1
+
+
+

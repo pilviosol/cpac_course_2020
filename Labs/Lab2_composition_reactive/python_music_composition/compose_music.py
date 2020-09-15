@@ -8,7 +8,7 @@ import sys
 import ctypes, sys
 
 
-from your_code import simple_next, arpeggio_next
+from your_code import simple_next, gingerbread_randomness, gingerbread
 from constants import STATUS_START
 
 def note_sleep(BPM, beats):
@@ -79,7 +79,9 @@ if __name__=="__main__":
 	n_agents=1
 	agents=[_ for _ in range(n_agents)]
 	#agents[0] = Agent(57120, "/note", 60, simple_next)
-	agents[0] = Agent(57120, "/note", 60, arpeggio_next)
+	agents[0] = Agent(57120, "/note", 60, gingerbread_randomness)
+	#agents[0] = Agent(57120, "/note", 60, gingerbread)
+
 	input("Press any key to start \n")
 	for agent in agents:
 		agent.start()
