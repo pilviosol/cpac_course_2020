@@ -14,7 +14,8 @@ SynthDef("moog", {
 
 	cutoff_freq=((cutoff+0.5)*6)*freq;
 
-	fil_osc=BLowPass.ar(in:osc1+osc2+osc3, freq:cutoff_freq);
+
+	fil_osc=BLowPass.ar(in:osc1+osc2+osc3, freq:cutoff_freq.min(20000));
 	Out.ar([0,1], amp*fil_osc);}).add;
 )
 
@@ -33,6 +34,9 @@ SynthDef("moog", {
 ~instr.set(\cutoff, 3);
 )
 
+(
+~instr.set(\amp, 1);
+)
 
 // Use this command to start the server
 NetAddr("127.0.0.1",57120);
@@ -43,16 +47,41 @@ NetAddr("127.0.0.1",57120);
 OSCdef('OSCreceiver',
 	{
 		arg msg;
-		var note, amp;
+		var note, amp, cutoff, vibr;
 
 		msg.postln;
-		note=msg[1];
-		amp=msg[2];
-		~instr.set(\midinote,note, \amp,amp);
-	},
-	"/note");
-)
+		note=msg[2];
+		amp=msg[3];
 
+		~instr.set(\midinote,note, \amp,amp);
+
+	},
+	"/note_effect",);
+)
+(
+OSCdef('OSCreceiver',
+	{
+		arg msg;
+		var note, amp, cutoff, vibr;
+
+		msg.postln;
+		if(msg[1].asString()=="note"){
+			"note".postln;
+			note=msg[2];
+			amp=msg[3];
+
+			~instr.set(\midinote,note, \amp,amp);
+			}{};
+		if(msg[1].asString()=="effect"){
+			"effect".postln;
+			cutoff=msg[2];
+			vibr=msg[3];
+			~instr.set(\vibr,vibr, \cutoff,cutoff);
+			}{};
+
+	},
+	"/note_effect",);
+)
 (
 OSCdef('OSCreceiver',
 	{
@@ -60,59 +89,13 @@ OSCdef('OSCreceiver',
 		var vibr, cutoff;
 
 		msg.postln;
-		cutoff=msg[1];
-		vibr=msg[2];
+		cutoff=msg[2];
+		vibr=msg[3];
 		~instr.set(\cutoff,cutoff, \vibr, vibr);
-	},
-	"/effect");
-)
-
-
-
-(
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var vibr, cutoff, amp, note;
-
-		msg.postln;
-
-		note=msg[1];
-		amp=msg[2];
-		cutoff=msg[3];
-		amp=msg[4];
-		instr.set(\cutoff,cutoff, \vibr, vibr, \amp,amp, \midinote, note);
 	},
 	"/note_effect");
 )
 
-
-
-(
-var instr=Synth(\moog);
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var note,amp;
-
-		msg.postln;
-		note=msg[1];
-		amp=msg[2];
-		instr.set(\midinote,note, \amp,amp);
-	},
-	"/note");
-OSCdef('OSCreceiver',
-	{
-		arg msg;
-		var vibr, cutoff;
-
-		msg.postln;
-		cutoff=msg[1];
-		vibr=msg[2];
-		instr.set(\cutoff,cutoff, \vibr, vibr);
-	},
-	"/effect");
-)
 
 
 
