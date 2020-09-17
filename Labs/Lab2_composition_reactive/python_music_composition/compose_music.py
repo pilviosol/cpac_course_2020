@@ -54,15 +54,19 @@ class Agent(Thread):
 	def planning(self):
 		self.func(self.status)
 	def kill(self):
+		# before killing it, I set the amplitude to 0
+			
 		self.stop.set()
 
 	def action(self):
 		while not self.stop.is_set():
 			self.planning()
 			print(str(self.status))			
-			self.instr.send(self.status.midinote,							
+			self.instr.send("note", self.status.midinote,							
 							self.status.amp)
 			note_sleep(self.status.BPM, self.status.dur)
+		self.instr.send("note", self.status.midinote,							
+							0)
 
 
 
@@ -79,7 +83,7 @@ if __name__=="__main__":
 	n_agents=1
 	agents=[_ for _ in range(n_agents)]
 	#agents[0] = Agent(57120, "/note", 60, simple_next)
-	agents[0] = Agent(57120, "/note", 60, gingerbread_randomness)
+	agents[0] = Agent(57120, "/note_effect", 60, gingerbread_randomness)
 	#agents[0] = Agent(57120, "/note", 60, gingerbread)
 
 	input("Press any key to start \n")
@@ -92,9 +96,9 @@ if __name__=="__main__":
 	except: 
 		
 		for agent in agents:
-			# before killing it, I set the amplitude to 0
-			agent.instr.send(agent.status.midinote, 0)  
+			  
 			agent.kill()
+			agent.join()
 		sys.exit()
 
 # %%
