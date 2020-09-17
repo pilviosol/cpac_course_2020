@@ -42,7 +42,7 @@ class AgentMover{
     
     float new_vibrato= constrain(this.position.x/width -0.5, -0.5, 0.5);
     this.old_vibrato=alpha* new_vibrato + (1-alpha)*this.old_vibrato;
-    float new_cutoff=constrain(5*(1+this.position.y/height),2,3);
+    float new_cutoff=constrain((this.position.y/height),0,1);
     this.old_cutoff= alpha* new_cutoff +(1-alpha)*this.old_cutoff;
     
     effect.add("effect");   
