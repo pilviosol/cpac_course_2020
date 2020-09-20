@@ -35,7 +35,7 @@ SynthDef("moog", {
 )
 
 (
-~instr.set(\amp, 1);
+~instr.set(\amp, 0);
 )
 
 // Use this command to start the server
@@ -43,7 +43,7 @@ NetAddr("127.0.0.1",57120);
 
 
 
-(
+( // use this if you are only using Python
 OSCdef('OSCreceiver',
 	{
 		arg msg;
@@ -58,7 +58,7 @@ OSCdef('OSCreceiver',
 	},
 	"/note_effect",);
 )
-(
+(// use this if you are using Python + Processing
 OSCdef('OSCreceiver',
 	{
 		arg msg;
@@ -82,7 +82,7 @@ OSCdef('OSCreceiver',
 	},
 	"/note_effect",);
 )
-(
+( // use this if you are only using Processing
 OSCdef('OSCreceiver',
 	{
 		arg msg;
